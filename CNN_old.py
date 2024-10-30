@@ -16,7 +16,7 @@ import tensorflow as tf
 from keras import regularizers
 from keras.layers import LeakyReLU
 
-# path_drive = 'P://fm//py//images'
+path_drive = 'P://fm//py//images'
 
 # Initialising the CNN
 Classifier = Sequential()
@@ -64,7 +64,7 @@ Classifier.add(Dropout(0.1,name='Dropout_Regularization')) #dropout=1 for fixing
 Classifier.add(Dense( 7, activation = 'softmax'))
 
 # Compiling the CNN
-opt = Adam(learning_rate=0.0001)
+opt = Adam(lr=0.0001)
 Classifier.compile(optimizer = opt, loss = 'categorical_crossentropy',
                    metrics=['accuracy'])
 
@@ -78,13 +78,13 @@ test_datagen = ImageDataGenerator( featurewise_center=False)
 
 
 
-train_set = train_datagen.flow_from_directory('.\\CSI-HAR-Dataset\\Train\\',
+train_set = train_datagen.flow_from_directory(path_drive + '//Train',
                                               target_size=(64,64),
                                                   color_mode="rgb",
-                                                  classes=['bend','fall','lie down', 'run', 'sitdown','standup','walk'],
+                                                  classes=['lie down','fall','bend', 'run', 'sitdown','standup','walk'],
                                                   class_mode="categorical",
                                                   batch_size=32,
-                                                  shuffle=True,
+                                                  shuffle=False,
                                                   seed=None,
                                                   save_to_dir=None,
                                                   save_prefix="",
@@ -97,10 +97,10 @@ train_set = train_datagen.flow_from_directory('.\\CSI-HAR-Dataset\\Train\\',
 
 
 
-test_set = test_datagen.flow_from_directory( '.\\CSI-HAR-Dataset\\Test\\' ,
+test_set = test_datagen.flow_from_directory( path_drive + '//Test',
                                             target_size=(64,64),
                                             color_mode="rgb",
-                                            classes=['bend','fall','lie down', 'run', 'sitdown','standup','walk'],
+                                            classes=['lie down','fall','bend', 'run', 'sitdown','standup','walk'],
                                             class_mode="categorical",
                                             batch_size=32,
                                             shuffle=False,
@@ -112,15 +112,13 @@ test_set = test_datagen.flow_from_directory( '.\\CSI-HAR-Dataset\\Test\\' ,
                                             subset=None,
                                             interpolation="nearest")
 
-print(train_set.filenames, test_set.filenames, sep = '\n')
-print(len(train_set), len(test_set))
 
 from keras.callbacks import ModelCheckpoint
 
 checkpoint = ModelCheckpoint("model_weights.h5",monitor='val_accuracy',verbose=1,save_best_only=True,mode='max')
 callbacks_list=[checkpoint]
 
-history = Classifier.fit(train_set,
+history = Classifier.fit_generator(train_set,
                                      epochs = 150,
                                      validation_data = test_set,
                                      callbacks=[checkpoint])
